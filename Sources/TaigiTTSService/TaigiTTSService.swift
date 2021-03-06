@@ -9,8 +9,14 @@ import Foundation
 import AVFoundation
 import Combine
 
+public enum Error: String, Swift.Error {
+    case loadingFailure
+}
+
 @available(iOS 13.0, OSX 10.15, *)
 public class TaigiTTSService {
+    
+    public typealias PreparePlayerPublisher = Publishers.TryCompactMap<NSObject.KeyValueObservingPublisher<AVPlayerItem, AVPlayerItem.Status>, AVPlayer>
     
     public static let shared = TaigiTTSService()
     var subscriptions = Set<AnyCancellable>()
@@ -27,6 +33,24 @@ public class TaigiTTSService {
         return components.url!
     }
     
+    public func preparePlayerPublisher(for text: String) -> PreparePlayerPublisher {
+        let url = speechRemoteURL(for: text)
+        let asset = AVURLAsset(url: url, options: nil)
+        let playerItem = AVPlayerItem(asset: asset)
+        let player = AVPlayer(playerItem: playerItem)
+        return playerItem.publisher(for: \.status)
+            .tryCompactMap { status -> AVPlayer? in
+                switch status {
+                case .readyToPlay:
+                    return player
+                case .failed:
+                    throw Error.loadingFailure
+                default:
+                    return nil
+                }
+            }
+            
+    }
     
     public func preparePlayer(for text: String, completionHandler: @escaping (AVPlayer?) -> Void) {
         let url = speechRemoteURL(for: text)
