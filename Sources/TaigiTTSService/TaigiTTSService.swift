@@ -7,12 +7,13 @@
 
 import Foundation
 import AVFoundation
+import Combine
 
 @available(iOS 13.0, OSX 10.15, *)
 public class TaigiTTSService {
     
     public static let shared = TaigiTTSService()
-    var subscriptions = [String: Any]()
+    var subscriptions = Set<AnyCancellable>()
     
     func speechRemoteURL(for text: String) -> URL {
         var components = URLComponents()
@@ -32,7 +33,7 @@ public class TaigiTTSService {
         let asset = AVURLAsset(url: url, options: nil)
         let playerItem = AVPlayerItem(asset: asset)
         let player = AVPlayer(playerItem: playerItem)
-        subscriptions[text] = playerItem.publisher(for: \.status)
+        playerItem.publisher(for: \.status)
             .sink {
                 switch $0 {
                 case .failed:
@@ -43,5 +44,6 @@ public class TaigiTTSService {
                     break
                 }
             }
+            .store(in: &subscriptions)
     }
 }
