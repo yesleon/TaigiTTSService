@@ -24,7 +24,7 @@ public class TaigiTTSService {
     func speechRemoteURL(for text: String) -> URL {
         var components = URLComponents()
         components.scheme = "https"
-        components.host = "xn--lhrz38b.xn--v0qr21b.xn--kpry57d"
+        components.host = "hts.ithuan.tw"
         components.path = "/文本直接合成"
         components.queryItems = [
             .init(name: "查詢腔口", value: "台語"),
