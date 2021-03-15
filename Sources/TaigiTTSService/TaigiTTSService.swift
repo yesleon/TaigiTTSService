@@ -36,8 +36,8 @@ public class TaigiTTSService {
         let playerItem = AVPlayerItem(asset: asset)
         let player = AVPlayer(playerItem: playerItem)
         let identifier = ObjectIdentifier(player)
-        observations[identifier] = playerItem.observe(\.status, options: .new) { playerItem, change in
-            switch change.newValue {
+        observations[identifier] = playerItem.observe(\.status) { playerItem, _ in
+            switch playerItem.status {
             case .failed:
                 completionHandler(nil)
                 observations[identifier] = nil
