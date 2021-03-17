@@ -16,8 +16,6 @@ public enum Error: String, Swift.Error {
 
 public class TaigiTTSService {
     
-    static var observations = [ObjectIdentifier: NSKeyValueObservation]()
-    
     static func speechRemoteURL(for text: String) -> URL {
         var components = URLComponents()
         components.scheme = "https"
@@ -35,17 +33,17 @@ public class TaigiTTSService {
         let asset = AVURLAsset(url: url, options: nil)
         let playerItem = AVPlayerItem(asset: asset)
         let player = AVPlayer(playerItem: playerItem)
-        let identifier = ObjectIdentifier(player)
-        observations[identifier] = playerItem.observe(\.status) { playerItem, _ in
+        var observation: Any?
+        observation = playerItem.observe(\.status) { playerItem, _ in
             switch playerItem.status {
             case .failed:
                 completionHandler(nil)
-                observations[identifier] = nil
+                observation = nil
             case .readyToPlay:
                 completionHandler(player)
-                observations[identifier] = nil
+                observation = nil
             default:
-                break
+                _ = observation
             }
         }
     }
